@@ -122,6 +122,46 @@ class TestRunsRelationManager extends RelationManager
                             ->{$status}()
                             ->send();
                     }),
+
+                Action::make('compare_runs')
+                    ->label('Compare Runs')
+                    ->icon('heroicon-o-arrows-right-left')
+                    ->color('gray')
+                    ->modalHeading('Compare Two Test Runs')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalWidth('7xl')
+                    ->schema(function (): array {
+                        /** @var Prompt $prompt */
+                        $prompt = $this->ownerRecord;
+
+                        $runOptions = $prompt->testRuns()
+                            ->with(['adapter', 'promptVersion'])
+                            ->latest()
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn ($r) => [
+                                $r->id => "[{$r->promptVersion?->branch_name}] v{$r->promptVersion?->version_number} — {$r->adapter?->name} ({$r->status->value})",
+                            ])
+                            ->toArray();
+
+                        return [
+                            Select::make('run_a_id')
+                                ->label('Run A')
+                                ->options($runOptions)
+                                ->required()
+                                ->native(false)
+                                ->live(),
+
+                            Select::make('run_b_id')
+                                ->label('Run B')
+                                ->options($runOptions)
+                                ->required()
+                                ->native(false)
+                                ->live(),
+                        ];
+                    })
+                    ->fillForm(fn () => []),
             ])
             ->recordActions([
                 Action::make('view_run')

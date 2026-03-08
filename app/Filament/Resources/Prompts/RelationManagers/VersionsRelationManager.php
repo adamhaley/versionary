@@ -126,6 +126,51 @@ class VersionsRelationManager extends RelationManager
                             ->send();
                     }),
 
+                Action::make('diff')
+                    ->label('Diff')
+                    ->icon('heroicon-o-arrows-right-left')
+                    ->color('gray')
+                    ->modalHeading(fn (PromptVersion $record) => "Diff v{$record->version_number} vs Previous")
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->schema(function (PromptVersion $record): array {
+                        $prev = $record->parent ?? PromptVersion::query()
+                            ->where('prompt_id', $record->prompt_id)
+                            ->where('branch_name', $record->branch_name)
+                            ->where('created_at', '<', $record->created_at)
+                            ->latest('created_at')
+                            ->first();
+
+                        if (! $prev) {
+                            return [
+                                \Filament\Infolists\Components\TextEntry::make('_note')
+                                    ->label('')
+                                    ->state('No previous version found on this branch to compare against.'),
+                            ];
+                        }
+
+                        return [
+                            \Filament\Schemas\Components\Grid::make(2)
+                                ->schema([
+                                    Section::make("v{$prev->version_number} — {$prev->branch_name}")
+                                        ->schema([
+                                            TextEntry::make('prev_title')->label('Title')->state($prev->title ?? '—'),
+                                            TextEntry::make('prev_system')->label('System Prompt')->prose()->state($prev->system_prompt ?? '—'),
+                                            TextEntry::make('prev_user')->label('User Prompt')->prose()->state($prev->user_prompt_template ?? '—'),
+                                            TextEntry::make('prev_dev')->label('Developer Prompt')->prose()->state($prev->developer_prompt ?? '—'),
+                                        ]),
+                                    Section::make("v{$record->version_number} — {$record->branch_name}")
+                                        ->schema([
+                                            TextEntry::make('curr_title')->label('Title')->state($record->title ?? '—'),
+                                            TextEntry::make('curr_system')->label('System Prompt')->prose()->state($record->system_prompt ?? '—'),
+                                            TextEntry::make('curr_user')->label('User Prompt')->prose()->state($record->user_prompt_template ?? '—'),
+                                            TextEntry::make('curr_dev')->label('Developer Prompt')->prose()->state($record->developer_prompt ?? '—'),
+                                        ]),
+                                ]),
+                        ];
+                    })
+                    ->fillForm(fn (PromptVersion $record): array => $record->toArray()),
+
                 Action::make('branch_from_here')
                     ->label('Branch')
                     ->icon('heroicon-o-code-bracket')
