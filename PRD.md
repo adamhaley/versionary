@@ -821,3 +821,38 @@ Build the application with the following architectural principles:
 
 A Laravel Filament app that gives teams a Git-like system for prompt creation, versioning, branching, rollback, and adapter-based AI testing across chat, coding, image, and video providers.
 
+---
+
+# 24. My Recommendation for Your Exact App
+
+## Stack
+
+**Laravel + Filament**
+
+Use Filament as the full admin shell — resources, forms, tables, actions, and pages. This is the right choice for a data-dense internal tool.
+
+## Event Sourcing
+
+**Spatie Laravel Event Sourcing** for the Prompt aggregate.
+
+This is the only domain that requires event sourcing. Everything else is conventional CRUD. Do not over-apply event sourcing.
+
+## Read Models
+
+Use standard Eloquent tables as read models for:
+
+- `prompts` — logical prompt records, current version pointer, status, metadata
+- `prompt_versions` — immutable projected snapshots of each version
+- `prompt_branches` — named lines of development within a prompt's version tree
+- `test_runs` — execution history for each prompt version / adapter pairing
+- `adapters` — provider integration configurations
+
+These tables are projected by Spatie projectors listening to domain events from the Prompt aggregate. Filament resources query these tables directly for all list, detail, filter, and search interactions.
+
+## Why This Combination Works
+
+- The write side (aggregate + events) guarantees immutable history, correct rollback semantics, and traceable lineage.
+- The read side (Eloquent tables) gives Filament exactly what it needs: queryable, sortable, filterable relational rows.
+- Spatie Laravel Event Sourcing handles the aggregate root, event store, projectors, and reactors — no need to build this infrastructure yourself.
+- This is the simplest architecture that satisfies all first-class requirements without overengineering.
+
