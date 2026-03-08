@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\TestRuns\Pages;
 
+use App\Filament\Resources\Prompts\PromptResource;
 use App\Filament\Resources\TestRuns\TestRunResource;
-use Filament\Actions\EditAction;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewTestRun extends ViewRecord
@@ -13,7 +14,10 @@ class ViewTestRun extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            Action::make('view_prompt')
+                ->label('View Prompt')
+                ->color('gray')
+                ->url(fn () => PromptResource::getUrl('view', ['record' => $this->record->prompt_id])),
         ];
     }
 }

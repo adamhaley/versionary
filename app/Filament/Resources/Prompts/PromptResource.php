@@ -6,6 +6,7 @@ use App\Filament\Resources\Prompts\Pages\CreatePrompt;
 use App\Filament\Resources\Prompts\Pages\EditPrompt;
 use App\Filament\Resources\Prompts\Pages\ListPrompts;
 use App\Filament\Resources\Prompts\Pages\ViewPrompt;
+use App\Filament\Resources\Prompts\RelationManagers\TestRunsRelationManager;
 use App\Filament\Resources\Prompts\RelationManagers\VersionsRelationManager;
 use App\Filament\Resources\Prompts\Schemas\PromptForm;
 use App\Filament\Resources\Prompts\Tables\PromptsTable;
@@ -40,6 +41,7 @@ class PromptResource extends Resource
     {
         return [
             VersionsRelationManager::class,
+            TestRunsRelationManager::class,
         ];
     }
 
