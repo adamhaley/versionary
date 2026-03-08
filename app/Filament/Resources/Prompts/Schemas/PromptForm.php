@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Prompts\Schemas;
 
 use App\Enums\AdapterCategory;
+use App\Models\Prompt;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Set;
@@ -48,6 +50,16 @@ class PromptForm
                 Section::make('Version Content')
                     ->description('The content of this version. Each save creates an immutable new version.')
                     ->schema([
+                        Select::make('_branch')
+                            ->label('Branch')
+                            ->visible(fn (string $operation) => $operation === 'edit')
+                            ->options(fn ($record) => $record instanceof Prompt
+                                ? $record->branches()->orderBy('name')->pluck('name', 'name')->toArray()
+                                : ['main' => 'main'])
+                            ->native(false)
+                            ->required()
+                            ->helperText('Which branch this version belongs to.'),
+
                         TextInput::make('title')
                             ->maxLength(255)
                             ->helperText('Optional short title for this version.'),

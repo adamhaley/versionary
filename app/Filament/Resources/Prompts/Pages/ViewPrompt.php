@@ -8,6 +8,8 @@ use App\Filament\Resources\Prompts\PromptResource;
 use App\Models\Prompt;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
@@ -60,19 +62,50 @@ class ViewPrompt extends ViewRecord
     {
         return $schema
             ->components([
-                \Filament\Infolists\Components\Section::make('Prompt Details')
+                Section::make('Prompt Details')
                     ->columns(3)
                     ->schema([
                         TextEntry::make('name'),
-                        TextEntry::make('status')->badge(),
-                        TextEntry::make('currentVersion.branch_name')->label('Branch')->badge(),
+                        TextEntry::make('status')
+                            ->badge()
+                            ->color(fn (PromptStatus $state): string => match ($state) {
+                                PromptStatus::Draft => 'gray',
+                                PromptStatus::Active => 'success',
+                                PromptStatus::Archived => 'danger',
+                            }),
+                        TextEntry::make('updater.name')->label('Last Edited By'),
                         TextEntry::make('summary')->columnSpanFull(),
                     ]),
 
-                \Filament\Infolists\Components\Section::make('Current Version')
+                Section::make('Branches')
+                    ->columns(1)
                     ->schema([
-                        TextEntry::make('currentVersion.title')->label('Title'),
-                        TextEntry::make('currentVersion.notes')->label('Notes'),
+                        RepeatableEntry::make('branches')
+                            ->label('')
+                            ->schema([
+                                TextEntry::make('name')->label('Branch')->badge()->color('info'),
+                                TextEntry::make('baseVersion.version_number')
+                                    ->label('Based On')
+                                    ->prefix('v'),
+                                TextEntry::make('creator.name')->label('Created By'),
+                                TextEntry::make('created_at')->label('Created')->since(),
+                            ])
+                            ->columns(4),
+                    ]),
+
+                Section::make('Current Version')
+                    ->schema([
+                        TextEntry::make('currentVersion.branch_name')
+                            ->label('Branch')
+                            ->badge()
+                            ->color('info'),
+                        TextEntry::make('currentVersion.version_number')
+                            ->label('Version')
+                            ->prefix('v'),
+                        TextEntry::make('currentVersion.title')
+                            ->label('Title'),
+                        TextEntry::make('currentVersion.notes')
+                            ->label('Notes'),
                         TextEntry::make('currentVersion.system_prompt')
                             ->label('System Prompt')
                             ->prose()

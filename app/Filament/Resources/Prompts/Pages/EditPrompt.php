@@ -6,6 +6,7 @@ use App\EventSourcing\Aggregates\PromptAggregate;
 use App\Filament\Resources\Prompts\PromptResource;
 use App\Models\Prompt;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -45,9 +46,13 @@ class EditPrompt extends EditRecord
             $data['user_prompt_template'] = $currentVersion->user_prompt_template;
             $data['developer_prompt'] = $currentVersion->developer_prompt;
             $data['notes'] = null;
+            $data['_branch'] = $currentVersion->branch_name;
         }
 
-        $data['categories'] = $prompt->categories->pluck('category')->map(fn ($c) => is_string($c) ? $c : $c->value)->toArray();
+        $data['categories'] = $prompt->categories
+            ->pluck('category')
+            ->map(fn ($c) => is_string($c) ? $c : $c->value)
+            ->toArray();
 
         return $data;
     }
@@ -58,12 +63,19 @@ class EditPrompt extends EditRecord
         $prompt = $record;
         $userId = auth()->id();
 
-        $currentVersionId = $prompt->current_version_id;
+        $branchName = $data['_branch'] ?? $prompt->currentVersion?->branch_name ?? 'main';
+
+        $latestOnBranch = $prompt->versions()
+            ->where('branch_name', $branchName)
+            ->latest('created_at')
+            ->first();
+
+        $parentVersionId = $latestOnBranch?->id ?? $prompt->current_version_id;
 
         PromptAggregate::retrieve($prompt->id)
             ->addVersion(
-                branchName: $prompt->currentVersion?->branch_name ?? 'main',
-                parentVersionId: $currentVersionId,
+                branchName: $branchName,
+                parentVersionId: $parentVersionId,
                 createdBy: $userId,
                 title: $data['title'] ?? null,
                 systemPrompt: $data['system_prompt'] ?? null,
@@ -73,7 +85,7 @@ class EditPrompt extends EditRecord
             )
             ->persist();
 
-        if (! empty($data['name']) && $data['name'] !== $prompt->name) {
+        if ($data['name'] !== $prompt->name || $data['slug'] !== $prompt->slug) {
             PromptAggregate::retrieve($prompt->id)
                 ->updateMetadata(
                     name: $data['name'],
@@ -84,6 +96,11 @@ class EditPrompt extends EditRecord
                 )
                 ->persist();
         }
+
+        Notification::make()
+            ->title('New version saved')
+            ->success()
+            ->send();
 
         return $prompt->fresh();
     }

@@ -6,6 +6,7 @@ use App\Filament\Resources\Prompts\Pages\CreatePrompt;
 use App\Filament\Resources\Prompts\Pages\EditPrompt;
 use App\Filament\Resources\Prompts\Pages\ListPrompts;
 use App\Filament\Resources\Prompts\Pages\ViewPrompt;
+use App\Filament\Resources\Prompts\RelationManagers\VersionsRelationManager;
 use App\Filament\Resources\Prompts\Schemas\PromptForm;
 use App\Filament\Resources\Prompts\Tables\PromptsTable;
 use App\Models\Prompt;
@@ -37,7 +38,9 @@ class PromptResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            VersionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
