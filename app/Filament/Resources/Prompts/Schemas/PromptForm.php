@@ -5,11 +5,11 @@ namespace App\Filament\Resources\Prompts\Schemas;
 use App\Enums\AdapterCategory;
 use App\Models\Prompt;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
