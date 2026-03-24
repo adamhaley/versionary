@@ -44,11 +44,6 @@ class AdapterForm
                             ->required()
                             ->maxLength(255)
                             ->columnSpan(1),
-
-                        TextInput::make('driver_class')
-                            ->maxLength(255)
-                            ->helperText('Fully-qualified class name of the adapter driver.')
-                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Capabilities')

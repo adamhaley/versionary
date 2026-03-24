@@ -24,12 +24,11 @@ class AdaptersTable
 
                 TextColumn::make('category')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'chat' => 'info',
-                        'coding' => 'success',
-                        'image' => 'warning',
-                        'video' => 'danger',
-                        default => 'gray',
+                    ->color(fn (AdapterCategory $state): string => match ($state) {
+                        AdapterCategory::Chat => 'info',
+                        AdapterCategory::Coding => 'success',
+                        AdapterCategory::Image => 'warning',
+                        AdapterCategory::Video => 'danger',
                     })
                     ->sortable(),
 
